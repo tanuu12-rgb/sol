@@ -1,2 +1,2 @@
-export * from "./generated/api";
-export * from "./generated/types";
+export { ClassifyEmergencyBody as ApiClassifyEmergencyBody } from "./generated/api";
+export { ClassifyEmergencyBody as ZodClassifyEmergencyBody } from "./generated/api-zod";
