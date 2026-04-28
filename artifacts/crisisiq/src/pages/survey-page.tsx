@@ -8,13 +8,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert, CheckCircle2, XCircle, Award, ArrowRight, Home, Flame, HeartPulse, Shield, Zap, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Confetti from "react-confetti";
+import { getGetGuestQueryKey } from "@workspace/api-client-react";
 
 export default function SurveyPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const guestId = localStorage.getItem("crisis_guest_id");
-  
-  const { data: guest } = useGetGuest({ id: guestId || "" }, { enabled: !!guestId });
+
+useGetGuest(guestId!, {
+  query: {
+    enabled: !!guestId,
+    queryKey: getGetGuestQueryKey(guestId!),
+  },
+});
   const { data: questions, isLoading } = useGetSurveyQuestions();
   const submitSurvey = useSubmitSurvey();
 

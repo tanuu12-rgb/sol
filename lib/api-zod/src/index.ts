@@ -1,1 +1,1 @@
-export { ClassifyEmergencyBody } from "./generated/api-zod";
+export * from "./generated/api";

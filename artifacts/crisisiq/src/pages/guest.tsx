@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { 
@@ -330,8 +331,7 @@ export default function GuestPortal() {
                           size="sm" 
                           className="mt-4 w-full bg-white text-emerald-700 hover:bg-emerald-50 font-bold"
                           onClick={() => {
-                            toast({
-                              title: "Certificate Generated",
+                            toast.success("Certificate Generated", {
                               description: "Your Safety Hero certificate has been downloaded to your device.",
                             });
                           }}
@@ -431,7 +431,6 @@ export default function GuestPortal() {
                 </div>
                 <div className="h-48 bg-card flex items-center justify-center relative">
                   <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                  {/* Mock map representation */}
                   <div className="w-3/4 h-2 bg-muted rounded-full relative">
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full shadow-[0_0_10px_blue]" />
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500">
