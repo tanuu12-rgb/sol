@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd artifacts/crisisiq && npm install && npm run build",
+  "outputDirectory": "artifacts/crisisiq/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

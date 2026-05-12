@@ -1,0 +1,610 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: CrisisIQ API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: guests
+  - name: staff
+  - name: incidents
+  - name: ai
+  - name: dashboard
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  /guests:
+    get:
+      operationId: listGuests
+      tags: [guests]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Guest" }
+    post:
+      operationId: createGuest
+      tags: [guests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateGuestBody" }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Guest" }
+
+  /guests/{id}:
+    get:
+      operationId: getGuest
+      tags: [guests]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Guest" }
+
+  /guests/{id}/checkout:
+    post:
+      operationId: checkoutGuest
+      tags: [guests]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Checked out
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success: { type: boolean }
+
+  /survey/questions:
+    get:
+      operationId: getSurveyQuestions
+      tags: [guests]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SurveyQuestion" }
+
+  /survey/submit:
+    post:
+      operationId: submitSurvey
+      tags: [guests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SurveySubmission" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [score, rewardPointsEarned, totalRewardPoints, passed]
+                properties:
+                  score: { type: integer }
+                  rewardPointsEarned: { type: integer }
+                  totalRewardPoints: { type: integer }
+                  passed: { type: boolean }
+
+  /staff:
+    get:
+      operationId: listStaff
+      tags: [staff]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/StaffMember" }
+
+  /staff/{id}/location:
+    post:
+      operationId: updateStaffLocation
+      tags: [staff]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [floor, x, y]
+              properties:
+                floor: { type: integer }
+                x: { type: number }
+                y: { type: number }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StaffMember" }
+
+  /staff/{id}/status:
+    post:
+      operationId: updateStaffStatus
+      tags: [staff]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [available, dispatched, busy] }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StaffMember" }
+
+  /incidents:
+    get:
+      operationId: listIncidents
+      tags: [incidents]
+      parameters:
+        - { name: status, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Incident" }
+    post:
+      operationId: createIncident
+      tags: [incidents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateIncidentBody" }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Incident" }
+
+  /incidents/{id}:
+    get:
+      operationId: getIncident
+      tags: [incidents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Incident" }
+
+  /incidents/{id}/status:
+    post:
+      operationId: updateIncidentStatus
+      tags: [incidents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [active, accepted, resolved] }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Incident" }
+
+  /incidents/{id}/coach-message:
+    post:
+      operationId: postCoachMessage
+      tags: [incidents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+                language: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CoachReply" }
+
+  /ai/classify:
+    post:
+      operationId: classifyEmergency
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [description]
+              properties:
+                description: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [type, confidence, summary]
+                properties:
+                  type: { type: string, enum: [Fire, Medical, Security, Other] }
+                  confidence: { type: number }
+                  summary: { type: string }
+
+  /ai/translate:
+    post:
+      operationId: translateText
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text, targetLanguage]
+              properties:
+                text: { type: string }
+                targetLanguage: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [translated]
+                properties:
+                  translated: { type: string }
+
+  /ai/debrief/{incidentId}:
+    post:
+      operationId: generateDebrief
+      tags: [ai]
+      parameters:
+        - { name: incidentId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DebriefReport" }
+
+  /ai/wellness/{incidentId}:
+    post:
+      operationId: generateWellness
+      tags: [ai]
+      parameters:
+        - { name: incidentId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message, language]
+                properties:
+                  message: { type: string }
+                  language: { type: string }
+
+  /ai/recommend/{incidentId}:
+    post:
+      operationId: recommendActions
+      tags: [ai]
+      parameters:
+        - { name: incidentId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [severity, priorityScore, actions, eta]
+                properties:
+                  severity: { type: string, enum: [low, medium, high, critical] }
+                  priorityScore: { type: number }
+                  eta: { type: string }
+                  actions:
+                    type: array
+                    items:
+                      type: object
+                      required: [title, detail]
+                      properties:
+                        title: { type: string }
+                        detail: { type: string }
+
+  /ai/social-radar:
+    get:
+      operationId: getSocialRadar
+      tags: [ai]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SocialRadar" }
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+
+  /dashboard/activity:
+    get:
+      operationId: getActivityFeed
+      tags: [dashboard]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ActivityItem" }
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+
+    AccessibilityProfile:
+      type: object
+      required: [deaf, wheelchair, visuallyImpaired, nonVerbal, cognitive]
+      properties:
+        deaf: { type: boolean }
+        wheelchair: { type: boolean }
+        visuallyImpaired: { type: boolean }
+        nonVerbal: { type: boolean }
+        cognitive: { type: boolean }
+
+    Guest:
+      type: object
+      required: [id, name, room, floor, language, accessibility, checkedInAt, rewardPoints, hasTakenSurvey]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        room: { type: string }
+        floor: { type: integer }
+        language: { type: string }
+        accessibility: { $ref: "#/components/schemas/AccessibilityProfile" }
+        checkedInAt: { type: string }
+        rewardPoints: { type: integer }
+        hasTakenSurvey: { type: boolean }
+        surveyScore: { type: integer, nullable: true }
+
+    CreateGuestBody:
+      type: object
+      required: [name, room, language, accessibility]
+      properties:
+        name: { type: string }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        room: { type: string }
+        language: { type: string }
+        accessibility: { $ref: "#/components/schemas/AccessibilityProfile" }
+
+    StaffMember:
+      type: object
+      required: [id, name, role, status, floor, x, y]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        role: { type: string }
+        status: { type: string, enum: [available, dispatched, busy] }
+        floor: { type: integer }
+        x: { type: number }
+        y: { type: number }
+        assignedIncidentId: { type: string, nullable: true }
+
+    Incident:
+      type: object
+      required: [id, type, room, floor, status, createdAt, log, x, y]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [Fire, Medical, Security, Other] }
+        room: { type: string }
+        floor: { type: integer }
+        x: { type: number }
+        y: { type: number }
+        status: { type: string, enum: [active, accepted, resolved] }
+        createdAt: { type: string }
+        resolvedAt: { type: string, nullable: true }
+        guestId: { type: string, nullable: true }
+        guestName: { type: string, nullable: true }
+        accessibility:
+          allOf:
+            - $ref: "#/components/schemas/AccessibilityProfile"
+          nullable: true
+        assignedStaffId: { type: string, nullable: true }
+        assignedStaffName: { type: string, nullable: true }
+        assignedRole: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        aiSummary: { type: string, nullable: true }
+        log:
+          type: array
+          items: { $ref: "#/components/schemas/IncidentLogEntry" }
+        coachMessages:
+          type: array
+          items: { $ref: "#/components/schemas/CoachMessage" }
+
+    IncidentLogEntry:
+      type: object
+      required: [timestamp, message]
+      properties:
+        timestamp: { type: string }
+        message: { type: string }
+
+    CoachMessage:
+      type: object
+      required: [role, text, timestamp]
+      properties:
+        role: { type: string, enum: [guest, ai] }
+        text: { type: string }
+        timestamp: { type: string }
+
+    CoachReply:
+      type: object
+      required: [reply]
+      properties:
+        reply: { type: string }
+        spatialMode: { type: boolean }
+
+    CreateIncidentBody:
+      type: object
+      required: [type, room, floor]
+      properties:
+        type: { type: string, enum: [Fire, Medical, Security, Other] }
+        room: { type: string }
+        floor: { type: integer }
+        guestId: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+
+    DebriefReport:
+      type: object
+      required: [incidentId, executiveSummary, timeline, responseTime, whatWorked, whatFailed, recommendations]
+      properties:
+        incidentId: { type: string }
+        executiveSummary: { type: string }
+        timeline:
+          type: array
+          items:
+            type: object
+            required: [time, event]
+            properties:
+              time: { type: string }
+              event: { type: string }
+        responseTime: { type: string }
+        whatWorked:
+          type: array
+          items: { type: string }
+        whatFailed:
+          type: array
+          items: { type: string }
+        recommendations:
+          type: array
+          items: { type: string }
+
+    SocialRadar:
+      type: object
+      required: [threatLevel, summary, posts]
+      properties:
+        threatLevel: { type: string, enum: [Low, Medium, High] }
+        summary: { type: string }
+        posts:
+          type: array
+          items:
+            type: object
+            required: [handle, text, timestamp]
+            properties:
+              handle: { type: string }
+              text: { type: string }
+              timestamp: { type: string }
+
+    DashboardSummary:
+      type: object
+      required: [activeIncidents, resolvedToday, staffAvailable, staffDispatched, accessibilityGuests, avgResponseSeconds]
+      properties:
+        activeIncidents: { type: integer }
+        resolvedToday: { type: integer }
+        staffAvailable: { type: integer }
+        staffDispatched: { type: integer }
+        accessibilityGuests: { type: integer }
+        avgResponseSeconds: { type: number }
+
+    ActivityItem:
+      type: object
+      required: [id, timestamp, kind, message]
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        kind: { type: string }
+        message: { type: string }
+
+    SurveyQuestion:
+      type: object
+      required: [id, question, options, correctAnswerIndex, explanation]
+      properties:
+        id: { type: string }
+        question: { type: string }
+        options: { type: array, items: { type: string } }
+        correctAnswerIndex: { type: integer }
+        explanation: { type: string }
+
+    SurveySubmission:
+      type: object
+      required: [guestId, answers]
+      properties:
+        guestId: { type: string }
+        answers: { type: array, items: { type: integer } }
